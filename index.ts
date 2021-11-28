@@ -1,13 +1,13 @@
-type BuiltInTag = "home" | "work";
+type BuiltInTag = "home" | "work" | "school";
 
 type TodoTag = BuiltInTag | { custom: string };
 
-type Todo = Readonly<{
+type Todo = {
   id: number;
   text: string;
   done: boolean;
   tag?: TodoTag;
-}>;
+};
 
 // Entry point
 document.addEventListener("DOMContentLoaded", () => {
@@ -17,23 +17,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const updateStateEvent = new CustomEvent("updateState", {});
 // Exemplo de generics
-function makeState<S>(initialState: S) {
-  let state: S;
-  function getState() {
-    return state;
+class initialState<S> {
+  state: S;
+  constructor(state: S) { 
+    this.state = state;
+  } 
+  getState(): S {
+    return this.state;
   }
-  function setState(x: S) {
-    state = x;
+  setState(x: S): void {
+    this.state = x;
     document.dispatchEvent(updateStateEvent);
   }
-  setState(initialState);
-  return { getState, setState };
 }
 
 // Application
 function TodoApp(listElement: HTMLDivElement) {
-  const { getState, setState } = makeState<Todo[]>([]);
-  const dataSet: Set<BuiltInTag> = new Set(["home", "work"]);
+
+  const { getState, setState } = new initialState<Todo[]>([]);
+  const dataSet: Set<BuiltInTag> = new Set(["home", "work", "school"]);
   let nextId = 0;
 
   listElement.innerHTML = `
@@ -58,9 +60,11 @@ function TodoApp(listElement: HTMLDivElement) {
   `;
 
   const formElement = listElement.querySelector("form")!;
+  //texto do todo
   const inputTextElement = listElement.querySelector(
     "#inputText"
   )! as HTMLInputElement;
+  //tag do todo
   const inputTagElement = listElement.querySelector(
     "#tagList"
   )! as HTMLInputElement;
@@ -124,9 +128,14 @@ function TodoApp(listElement: HTMLDivElement) {
 
     setState(data);
   }
-
+  //complete
   function toggleTodo(todo: Todo): Todo {
-    
+    return { 
+        id: todo.id,
+        text: todo.text,
+        done: todo!.done,
+        tag: todo.tag
+    };
   }
 
   function createTodo(text: string, rawTag: string = ""): Todo {
@@ -139,7 +148,7 @@ function TodoApp(listElement: HTMLDivElement) {
   }
 
   function getTodoTag(tag: string): TodoTag {
-    return tag === "home" || tag === "work" ? tag : { custom: tag };
+    return tag === "home" || tag === "work" || tag === "school" ? tag : { custom: tag };
   }
 
   function createTodoTagTuple(tag: TodoTag): [HTMLElement, HTMLSpanElement] {
@@ -154,6 +163,9 @@ function TodoApp(listElement: HTMLDivElement) {
     } else if (tag === "work") {
       icon.classList.add("bi-briefcase");
       label.textContent = "Work";
+    } else if (tag === "school") {
+      icon.classList.add("bi bi-mortarboard");
+      label.textContent = "School";
     } else {
       icon.classList.add("bi-pin");
       label.textContent = tag.custom;
@@ -161,12 +173,25 @@ function TodoApp(listElement: HTMLDivElement) {
 
     return [icon, label];
   }
-
-  function completeAll(todos: Todo[]): Array<Todo & { done: true }> {
-    
+  //complete
+  function completeAll(todos: Todo[]): Array<Todo> {
+    //let i: number;
+    for (let i of todos) {
+      if (i.done === false) {
+        i.done = true;
+      }
+    }
+    return todos;
   }
-
+  //complete
   function getTotalDone(todos: Todo[]): number {
+    let total= 0; 
+    for (let i of todos) {
+      if (i.done === true) {
+        total++;
+      }
+    }
+    return total;
     
   }
 
