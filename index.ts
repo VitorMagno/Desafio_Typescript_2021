@@ -119,7 +119,6 @@ function TodoApp(listElement: HTMLDivElement) {
   function handleToggleTodo(todo: Todo) {
     const id = todo.id;
     const newTodo = toggleTodo(todo);
-
     const data = getState().filter((el) => el.id != id);
 
     data.push(newTodo);
